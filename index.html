@@ -3,362 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>محلل ومدرب الشطرنج - MatePad Edition</title>
+    <title>محلل ومدرب الشطرنج</title>
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <style>
         * { box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #161512;
-            color: #e0e0e0;
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 20px;
-            min-height: 100vh;
-        }
-        /* منطقة الرقعة وشريط التقييم */
-        .board-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .eval-bar-wrapper {
-            width: 24px;
-            height: min(82vw, 460px);
-            background: #2b2926;
-            border-radius: 4px;
-            overflow: hidden;
-            position: relative;
-            border: 1px solid #444;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-        }
-        .eval-bar-fill {
-            width: 100%;
-            height: 50%;
-            background: #f0f0f0;
-            transition: height 0.4s ease;
-        }
-        .eval-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            font-size: 10px;
-            font-weight: bold;
-            z-index: 2;
-            padding: 4px 0;
-        }
+        body { font-family: Tahoma, sans-serif; background: #161512; color: #e0e0e0; margin: 0; padding: 12px; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        .board-container { display: flex; gap: 8px; align-items: center; }
+        .eval-bar-wrapper { width: 22px; height: min(82vw, 450px); background: #2b2926; border-radius: 4px; overflow: hidden; position: relative; border: 1px solid #444; display: flex; flex-direction: column; justify-content: flex-end; }
+        .eval-bar-fill { width: 100%; height: 50%; background: #f0f0f0; transition: height 0.4s; }
+        .eval-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; z-index: 2; padding: 3px 0; }
         .eval-top { top: 2px; color: #fff; }
         .eval-bottom { bottom: 2px; color: #111; }
-
-        .board-wrapper {
-            position: relative;
-            width: min(82vw, 460px);
-            height: min(82vw, 460px);
-            touch-action: none;
-        }
+        .board-wrapper { position: relative; width: min(82vw, 450px); height: min(82vw, 450px); touch-action: none; }
         #board { width: 100%; height: 100%; }
-        #arrow-layer {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        /* لوحة التحكم والتحليل */
-        .panel {
-            width: min(92vw, 430px);
-            background: #262421;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .box {
-            background: #302e2b;
-            padding: 11px;
-            border-radius: 6px;
-            border: 1px solid #3d3b38;
-        }
-        .box-title {
-            font-size: 0.85em;
-            color: #9e9e9e;
-            margin-bottom: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        /* صندوق اسم الافتتاحية في الـ Runtime */
-        .opening-banner {
-            background: #1e293b;
-            border: 1px solid #38bdf8;
-            border-radius: 6px;
-            padding: 10px;
-        }
-        .opening-name {
-            color: #38bdf8;
-            font-weight: bold;
-            font-size: 0.95em;
-            direction: ltr;
-            text-align: left;
-        }
-        .opening-desc {
-            font-size: 0.85em;
-            color: #cbd5e1;
-            margin-top: 5px;
-            line-height: 1.4;
-        }
-        .master-moves {
-            font-family: monospace;
-            font-size: 0.82em;
-            color: #94a3b8;
-            margin-top: 5px;
-            direction: ltr;
-            text-align: left;
-        }
-
-        .engine-lines {
-            font-family: monospace;
-            font-size: 0.9em;
-            direction: ltr;
-            text-align: left;
-            line-height: 1.5;
-            color: #a5d6a7;
-        }
-        .move-quality {
-            font-weight: bold;
-            font-size: 0.95em;
-            padding: 7px;
-            border-radius: 4px;
-            text-align: center;
-            background: #222;
-        }
+        #arrow-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        .panel { width: min(92vw, 420px); background: #262421; padding: 14px; border-radius: 8px; display: flex; flex-direction: column; gap: 10px; }
+        .box { background: #302e2b; padding: 10px; border-radius: 6px; border: 1px solid #3d3b38; }
+        .box-title { font-size: 0.85em; color: #9e9e9e; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .opening-banner { background: #1e293b; border: 1px solid #38bdf8; border-radius: 6px; padding: 10px; }
+        .opening-name { color: #38bdf8; font-weight: bold; font-size: 0.95em; direction: ltr; text-align: left; }
+        .opening-desc { font-size: 0.85em; color: #cbd5e1; margin-top: 5px; line-height: 1.4; }
+        .master-moves { font-family: monospace; font-size: 0.8em; color: #94a3b8; margin-top: 5px; direction: ltr; text-align: left; }
+        .engine-lines { font-family: monospace; font-size: 0.9em; direction: ltr; text-align: left; line-height: 1.5; color: #a5d6a7; }
+        .move-quality { font-weight: bold; font-size: 0.95em; padding: 7px; border-radius: 4px; text-align: center; background: #222; }
         .q-best { color: #81c784; border-right: 4px solid #4caf50; }
         .q-good { color: #aed581; border-right: 4px solid #8bc34a; }
         .q-inaccuracy { color: #fff176; border-right: 4px solid #fbc02d; }
         .q-mistake { color: #ffb74d; border-right: 4px solid #ff9800; }
         .q-blunder { color: #e57373; border-right: 4px solid #f44336; }
-
-        .pgn-box {
-            height: 95px;
-            overflow-y: auto;
-            font-family: monospace;
-            direction: ltr;
-            text-align: left;
-            font-size: 0.95em;
-            line-height: 1.6;
-            color: #ddd;
-            background: #1e1d1a;
-            padding: 8px;
-            border-radius: 4px;
-        }
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-        }
-        .actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 6px;
-        }
-        select, button, textarea {
-            font-family: inherit;
-            border-radius: 4px;
-        }
-        select {
-            width: 100%;
-            padding: 8px;
-            background: #1e1d1a;
-            color: #fff;
-            border: 1px solid #555;
-            font-size: 0.9em;
-        }
-        button {
-            padding: 9px 6px;
-            background: #3692e7;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.85em;
-            touch-action: manipulation;
-        }
-        button:active { opacity: 0.8; }
+        .pgn-box { height: 90px; overflow-y: auto; font-family: monospace; direction: ltr; text-align: left; font-size: 0.9em; color: #ddd; background: #1e1d1a; padding: 8px; border-radius: 4px; }
+        .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
+        .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+        select, button, textarea { border-radius: 4px; font-family: inherit; }
+        select { width: 100%; padding: 8px; background: #1e1d1a; color: #fff; border: 1px solid #555; }
+        button { padding: 9px 5px; background: #3692e7; color: #fff; border: none; cursor: pointer; font-weight: bold; font-size: 0.85em; }
         button.secondary { background: #45423e; }
         button.success { background: #4caf50; }
-        textarea {
-            width: 100%;
-            height: 50px;
-            background: #1e1d1a;
-            color: #fff;
-            border: 1px solid #444;
-            padding: 6px;
-            font-family: monospace;
-            direction: ltr;
-            resize: none;
-        }
+        textarea { width: 100%; height: 48px; background: #1e1d1a; color: #fff; border: 1px solid #444; padding: 6px; font-family: monospace; direction: ltr; resize: none; }
     </style>
 </head>
 <body>
-
     <div class="board-container">
         <div class="eval-bar-wrapper">
             <div id="eval-top" class="eval-text eval-top"></div>
             <div id="eval-fill" class="eval-bar-fill"></div>
             <div id="eval-bottom" class="eval-text eval-bottom">0.0</div>
         </div>
-
         <div class="board-wrapper">
             <div id="board"></div>
             <svg id="arrow-layer" viewBox="0 0 480 480">
-                <defs>
-                    <marker id="arrowhead" markerWidth="4" markerHeight="4" refX="2.5" refY="2" orient="auto">
-                        <polygon points="0 0, 4 2, 0 4" fill="rgba(76, 175, 80, 0.85)" />
-                    </marker>
-                </defs>
+                <defs><marker id="arrowhead" markerWidth="4" markerHeight="4" refX="2.5" refY="2" orient="auto"><polygon points="0 0, 4 2, 0 4" fill="rgba(76, 175, 80, 0.85)" /></marker></defs>
                 <line id="best-arrow" x1="0" y1="0" x2="0" y2="0" stroke="rgba(76, 175, 80, 0.85)" stroke-width="8" stroke-linecap="round" marker-end="url(#arrowhead)" style="display:none;" />
             </svg>
         </div>
     </div>
 
     <div class="panel">
-        <!-- 1. التعرف اللحظي على الافتتاحية -->
         <div class="opening-banner">
-            <div class="box-title" style="color: #93c5fd;">
-                <span>📖 الافتتاحية الحالية (Runtime)</span>
-                <span id="eco-code">Start</span>
-            </div>
+            <div class="box-title" style="color: #93c5fd;"><span>📖 الافتتاحية (Runtime)</span><span id="eco-code">Start</span></div>
             <div id="opening-name" class="opening-name">Starting Position</div>
-            <div id="opening-desc" class="opening-desc">حرك القطع لاكتشاف الافتتاحية، أو اختر درساً من مكتبة الافتتاحيات بالأسفل.</div>
+            <div id="opening-desc" class="opening-desc">حرك القطع لاكتشاف الافتتاحية، أو اختر درساً من القائمة.</div>
             <div id="master-moves" class="master-moves"></div>
         </div>
-
-        <!-- 2. مكتبة تعليم الافتتاحيات -->
         <div class="box">
-            <div class="box-title"><span>🎓 تعليم الافتتاحيات والتفريعات</span></div>
+            <div class="box-title"><span>🎓 تعليم الافتتاحيات</span></div>
             <select id="opening-selector" onchange="loadSelectedOpening()">
-                <option value="">-- اختر افتتاحية لدراستها وتحليلها --</option>
+                <option value="">-- اختر افتتاحية لدراستها --</option>
                 <option value="kings_gambit_accepted">جامبيت الملك المقبول (King's Gambit Accepted)</option>
-                <option value="kings_gambit_falkbeer">جامبيت الملك - هجوم فالكبير المضاد (Falkbeer Countergambit)</option>
-                <option value="queens_gambit">جامبيت الوزير (Queen's Gambit Declined)</option>
-                <option value="italian_game">الافتتاح الإيطالي - هجوم جيوكو بيانو (Italian Game)</option>
-                <option value="ruy_lopez">افتتاح روي لوبيز الإسباني (Ruy Lopez)</option>
-                <option value="sicilian_najdorf">الدفاع الصقلي - تفريعة ناجدورف (Sicilian Najdorf)</option>
-                <option value="caro_kann">دفاع كارو-كان (Caro-Kann Defense)</option>
+                <option value="kings_gambit_falkbeer">جامبيت الملك - هجوم فالكبير المضاد</option>
+                <option value="queens_gambit">جامبيت الوزير (Queen's Gambit)</option>
+                <option value="italian_game">الافتتاح الإيطالي (Italian Game)</option>
+                <option value="ruy_lopez">روي لوبيز الإسباني (Ruy Lopez)</option>
+                <option value="sicilian_najdorf">الدفاع الصقلي - ناجدورف (Sicilian Najdorf)</option>
+                <option value="caro_kann">دفاع كارو-كان (Caro-Kann)</option>
                 <option value="french_defense">الدفاع الفرنسي (French Defense)</option>
             </select>
         </div>
-
-        <!-- 3. تقييم النقلة -->
         <div class="box">
-            <div class="box-title">
-                <span>تقييم النقلة الأخيرة</span>
-                <span id="engine-status" style="color: #ffb74d;">⏳ تحميل المحرك...</span>
-            </div>
+            <div class="box-title"><span>تقييم النقلة</span><span id="engine-status" style="color: #ffb74d;">⏳ تحميل...</span></div>
             <div id="move-quality" class="move-quality">ابدأ اللعب للتحليل الفوري</div>
         </div>
-
-        <!-- 4. خطوط Stockfish -->
         <div class="box">
-            <div class="box-title">
-                <span>أفضل الردود المقترحة (Stockfish)</span>
-                <span id="depth-info">Depth: 0</span>
-            </div>
+            <div class="box-title"><span>أفضل الردود (Stockfish)</span><span id="depth-info">Depth: 0</span></div>
             <div id="engine-lines" class="engine-lines">في انتظار التحليل...</div>
         </div>
-
-        <!-- 5. سجل النقلات والتحكم -->
         <div class="box">
-            <div class="box-title"><span>سجل النقلات (PGN Notation)</span></div>
+            <div class="box-title"><span>سجل النقلات (PGN)</span></div>
             <div id="pgn-display" class="pgn-box"></div>
-            
-            <div class="controls" style="margin-top: 8px;">
+            <div class="controls">
                 <button class="secondary" onclick="goToMove(0)">⏮</button>
                 <button class="secondary" onclick="prevMove()">◀</button>
                 <button class="secondary" onclick="nextMove()">▶</button>
                 <button class="secondary" onclick="goToMove(historyMoves.length)">⏭</button>
             </div>
         </div>
-
         <div class="actions">
             <button class="success" onclick="downloadPGN()">💾 حفظ Text</button>
             <button class="secondary" onclick="flipBoard()">🔄 قلب الرقعة</button>
-            <button class="secondary" onclick="resetGame()">🆕 دور جديد</button>
+            <button class="secondary" onclick="resetGame()">🆕 جديد</button>
         </div>
-
-        <!-- 6. استيراد PGN -->
         <div class="box">
-            <div class="box-title"><span>استيراد مباراة (الصق PGN هنا)</span></div>
+            <div class="box-title"><span>استيراد PGN</span></div>
             <textarea id="pgn-input" placeholder="1. e4 e5 2. Nf3 Nc6 ..."></textarea>
-            <button style="width: 100%; margin-top: 6px;" onclick="loadPGN()">تحميل وتحليل المباراة</button>
+            <button style="width: 100%; margin-top: 5px;" onclick="loadPGN()">تحميل المباراة</button>
         </div>
     </div>
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-
     <script>
-        let board = null;
-        let game = new Chess();
-        let stockfish = null;
-        let historyMoves = [];
-        let currentMoveIndex = 0;
-        let currentEval = 0.0;
-        let pvLines = {};
-        let lastBestMove = '';
+        let board = null, game = new Chess(), stockfish = null, historyMoves = [], currentMoveIndex = 0, currentEval = 0.0, pvLines = {}, lastBestMove = '';
 
-        // قاعدة بيانات تعليمية للافتتاحيات
         const openingsLibrary = {
-            kings_gambit_accepted: {
-                pgn: "1. e4 e5 2. f4 exf4 3. Nf3 g5 4. Bc4 Bg7",
-                desc: "جامبيت الملك المقبول (C33): يضحي الأبيض ببيدق f4 في النقلة الثانية لفتح عمود f للرخ والسيطرة على الوسط بـ d4، بينما يحاول الأسود التمسك بالبيدق الإضافي عبر g5."
-            },
-            kings_gambit_falkbeer: {
-                pgn: "1. e4 e5 2. f4 d5 3. exd5 e4 4. d3 Nf6",
-                desc: "هجوم فالكبير المضاد (C31): يرفض الأسود أكل البيدق ويضرب الوسط فوراً بـ d5 لعرقلة تطور قطع الأبيض واستغلال ضعف جناح الملك."
-            },
-            queens_gambit: {
-                pgn: "1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Be7",
-                desc: "جامبيت الوزير المرفوض (D37): يعرض الأبيض بيدق c4 لصرف بيدق الأسود عن الوسط. يتميز باللعب الاستراتيجي الهادئ والضغط الطويل على مربع d5."
-            },
-            italian_game: {
-                pgn: "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d4",
-                desc: "الافتتاح الإيطالي (C50): يوجه الفيل نحو أضعف نقطة عند الأسود (f7) ويهيئ لبناء وسط قوي جداً بالنقلة c3 ثم d4."
-            },
-            ruy_lopez: {
-                pgn: "1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O",
-                desc: "روي لوبيز الإسباني (C60): يضغط الأبيض على الحصان المدافع عن بيدق e5، مما يخلق ضغطاً مستمراً على وسط الأسود."
-            },
-            sicilian_najdorf: {
-                pgn: "1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6",
-                desc: "الدفاع الصقلي - ناجدورف (B90): أشهر دفاع هجومي للأسود للعب على الفوز، يمنع قفزات قطع الأبيض لمربع b5 ويجهز لهجوم مضاد في جناح الوزير."
-            },
-            caro_kann: {
-                pgn: "1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Bf5",
-                desc: "دفاع كارو-كان (B18): دفاع صلب جداً للأسود، يجهز لدفع d5 مع الحفاظ على هيكل بيادق متماسك وإخراج الفيل الأبيض خارج سلسلة البيادق."
-            },
-            french_defense: {
-                pgn: "1. e4 e6 2. d4 d5 3. Nc3 Bb4 4. e5 c5",
-                desc: "الدفاع الفرنسي (C15): يبني الأسود سلسلة بيادق قوية ويهاجم قاعدة بيادق الأبيض (d4) بالنقلة c5."
-            }
+            kings_gambit_accepted: { pgn: "1. e4 e5 2. f4 exf4 3. Nf3 g5 4. Bc4 Bg7", desc: "جامبيت الملك المقبول (C33): يضحي الأبيض ببيدق f4 لفتح عمود f والسيطرة على الوسط بـ d4، بينما يتمسك الأسود بالبيدق عبر g5." },
+            kings_gambit_falkbeer: { pgn: "1. e4 e5 2. f4 d5 3. exd5 e4 4. d3 Nf6", desc: "هجوم فالكبير المضاد (C31): يرفض الأسود البيدق ويضرب الوسط فوراً بـ d5 لاستغلال ضعف جناح الملك." },
+            queens_gambit: { pgn: "1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Be7", desc: "جامبيت الوزير (D37): يعرض الأبيض بيدق c4 لصرف بيدق الأسود عن الوسط والضغط على d5." },
+            italian_game: { pgn: "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d4", desc: "الافتتاح الإيطالي (C50): يوجه الفيل نحو أضعف نقطة (f7) ويهيئ لبناء وسط قوي بـ c3 ثم d4." },
+            ruy_lopez: { pgn: "1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O", desc: "روي لوبيز (C60): يضغط الأبيض على الحصان المدافع عن بيدق e5 لخلق ضغط مستمر على الوسط." },
+            sicilian_najdorf: { pgn: "1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6", desc: "الدفاع الصقلي - ناجدورف (B90): دفاع هجومي للأسود، يمنع قفزات قطع الأبيض لـ b5 ويجهز لهجوم في جناح الوزير." },
+            caro_kann: { pgn: "1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Bf5", desc: "دفاع كارو-كان (B18): دفاع صلب يحافظ على هيكل بيادق متماسك ويخرج الفيل الأبيض خارج السلسلة." },
+            french_defense: { pgn: "1. e4 e6 2. d4 d5 3. Nc3 Bb4 4. e5 c5", desc: "الدفاع الفرنسي (C15): يبني الأسود سلسلة بيادق قوية ويهاجم قاعدة الأبيض d4 بالنقلة c5." }
         };
 
-        // 1. تشغيل محرك Stockfish
         fetch('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js')
             .then(res => res.text())
             .then(code => {
-                const blob = new Blob([code], { type: 'application/javascript' });
-                stockfish = new Worker(URL.createObjectURL(blob));
-                
+                stockfish = new Worker(URL.createObjectURL(new Blob([code], { type: 'application/javascript' })));
                 stockfish.postMessage('uci');
-                stockfish.postMessage('setoption
+                stockfish.postMessage('setoption name MultiPV value 3');
+                stockfish.onmessage = e => parseEngineOutput(e.data);
+                document.getElementById('engine-status').innerText = '● المحرك جاهز';
+                document.getElementById('engine-status').style.color = '#4caf50';
+                startRuntimeAnalysis();
+            });
+
+        function uciLineToSan(fen, uciMoves) {
+            const temp = new Chess(fen), sanList = [];
+            for (let m of uciMoves.slice(0, 5)) {
+                const moveObj = temp.move({ from: m.substring(0, 2), to: m.substring(2, 4), promotion: m[4] || 'q' });
+                if (!moveObj) break;
+                sanList.push(moveObj.san);
+            }
+            return sanList.join(' ');
+        }
+
+        function parseEngineOutput(line) {
+            if (line.includes('info depth') && line.includes('pv')) {
+                const depthMatch = line.match(/depth (\d+)/), multipvMatch = line.match(/multipv (\d+)/);
+                const scoreCpMatch = line.match(/score cp (-?\d+)/), scoreMateMatch = line.match(/score mate (-?\d+)/), pvMatch = line.match(/ pv (.+)/);
+                if (depthMatch && pvMatch) {
+                    const lineNum = multipvMatch ? multipvMatch[1] : '1', rawMoves = pvMatch[1].split(' ');
+                    let scoreText = '', numericEval = 0;
+                    if (scoreCpMatch) {
+                        let cp = parseInt(scoreCpMatch[1]) / 100;
+                        if (game.turn() === 'b') cp = -cp;
+                        numericEval = cp; scoreText = (cp > 0 ? '+' : '') + cp.toFixed(2);
+                    } else if (scoreMateMatch) {
+                        let mate = parseInt(scoreMateMatch[1]);
+                        if (game.turn() === 'b') mate = -mate;
+                        numericEval = mate > 0 ? 100 : -100; scoreText = 'M' + Math.abs(mate);
+                    }
+                    pvLines[lineNum] = `<b>[${scoreText}]</b> ${uciLineToSan(game.fen(), rawMoves)}`;
+                    document.getElementById('depth-info').innerText = `Depth: ${depthMatch[1]}`;
+                    if (lineNum === '1') { currentEval = numericEval; updateEvalBar(numericEval, scoreText); lastBestMove = rawMoves[0]; drawArrow(lastBestMove); }
+                    let html = '';
+                    for (let i = 1; i <= 3; i++) if (pvLines[i]) html += `<div>${i}. ${pvLines[i]}</div>`;
+                    document.getElementById('engine-lines').innerHTML = html;
+                }
+            }
+        }
+
+        async function detectOpeningRuntime() {
+            if (historyMoves.length === 0 || currentMoveIndex === 0) {
+                document.getElementById('eco-code').innerText = 'Start'; document.getElementById('opening-name').innerText = 'Starting Position'; document.getElementById('master-moves').innerText = ''; return;
+            }
+            try {
+                const res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(game.fen())}&topGames=0&recentGames=0`);
+                const data = await res.json();
+                if (data.opening) { document.getElementById('eco-code').innerText = data.opening.eco; document.getElementById('opening-name').innerText = data.opening.name; }
+                if (data.moves && data.moves.length > 0) {
+                    const top3 = data.moves.slice(0, 3).map(m => `${m.san} (${Math.round((m.white / (m.white + m.draws + m.black)) * 100)}% W)`).join(' | ');
+                    document.getElementById('master-moves').innerText = `نقلات الأساتذة: ${top3}`;
+                } else { document.getElementById('master-moves').innerText = 'خارج كتاب الافتتاحيات (Middlegame)'; }
+            } catch (e) {}
+        }
+
+        function loadSelectedOpening() {
+            const item = openingsLibrary[document.getElementById('opening-selector').value];
+            if (!item) return;
+            const tempGame = new Chess();
+            if (tempGame.load_pgn(item.pgn)) {
+                historyMoves = tempGame.history({ verbose: true });
+                document.getElementById('opening-desc').innerText = item.desc;
+                goToMove(1);
+                document.getElementById('move-quality').innerText = 'استخدم زر التالي (▶) لمتابعة الافتتاحية';
+                document.getElementById('move-quality').className = 'move-quality';
+            }
+        }
+
+        function startRuntimeAnalysis() {
+            if (!stockfish) return;
+            pvLines = {}; stockfish.postMessage('stop'); stockfish.postMessage('position fen ' + game.fen()); stockfish.postMessage('go depth 15');
+            detectOpeningRuntime();
+        }
+
+        function evaluateMoveQuality(prevEval, newEval, playerColor) {
+            let diff = (playerColor === 'w') ? (newEval - prevEval) : (prevEval - newEval);
+            const qBox = document.getElementById('move-quality'); qBox.className = 'move-quality';
+            if (diff >= -0.2) { qBox.innerText = '⭐ نقلة ممتازة (Best Move)'; qBox.classList.add('q-best'); }
+            else if (diff >= -0.6) { qBox.innerText = '👍 نقلة جيدة (Good)'; qBox.classList.add('q-good'); }
+            else if (diff >= -1.2) { qBox.innerText = '⁉️ عدم دقة (Inaccuracy ?!)'; qBox.classList.add('q-inaccuracy'); }
+            else if (diff >= -2.5) { qBox.innerText = '⚠️ خطأ (Mistake ?)'; qBox.classList.add('q-mistake'); }
+            else { qBox.innerText = '❌ خطأ فادح (Blunder ??)'; qBox.classList.add('q-blunder'); }
+        }
+
+        function updateEvalBar(evalNum, text) {
+            let percent = Math.max(5, Math.min(95, 50 + (evalNum * 5)));
+            document.getElementById('eval-fill').style.height = percent + '%';
+            document.getElementById('eval-bottom').innerText = evalNum >= 0 ? text : '';
+            document.getElementById('eval-top').innerText = evalNum < 0 ? text : '';
+        }
+
+        function drawArrow(move) {
+            const arrow = document.getElementById('best-arrow');
+            if (!move || move.length < 4) { arrow.style.display = 'none'; return; }
+            const files = 'abcdefgh', isFlipped = board.orientation() === 'black';
+            let fc = files.indexOf(move[0]), fr = 8 - parseInt(move[1]), tc = files.indexOf(move[2]), tr = 8 - parseInt(move[3]);
+            if (isFlipped) { fc = 7 - fc; fr = 7 - fr; tc = 7 - tc; tr = 7 - tr; }
+            const sq = 480 / 8;
+            arrow.setAttribute('x1', fc * sq + sq / 2); arrow.setAttribute('y1', fr * sq + sq / 2);
+            arrow.setAttribute('x2', tc * sq + sq / 2); arrow.setAttribute('y2', tr * sq + sq / 2);
+            arrow.style.display = 'block';
+        }
+
+        function onDrop(source, target) {
+            const playerColor = game.turn(), prevEval = currentEval;
+            if (currentMoveIndex < historyMoves.length) historyMoves = historyMoves.slice(0, currentMoveIndex);
+            const move = game.move({ from: source, to: target, promotion: 'q' });
+            if (move === null) return 'snapback';
+            historyMoves.push(move); currentMoveIndex = historyMoves.length;
+            updatePGNDisplay(); startRuntimeAnalysis();
+            setTimeout(() => evaluateMoveQuality(prevEval, currentEval, playerColor), 600);
+        }
+
+        function goToMove(index) {
+            game.reset();
+            for (let i = 0; i < index; i++) game.move(historyMoves[i]);
+            currentMoveIndex = index; board.position(game.fen()); updatePGNDisplay(); startRuntimeAnalysis();
+        }
+        function prevMove() { if (currentMoveIndex > 0) goToMove(currentMoveIndex - 1); }
+        function nextMove() { if (currentMoveIndex < historyMoves.length) goToMove(currentMoveIndex + 1); }
+        function flipBoard() { board.flip(); drawArrow(lastBestMove); }
+        function updatePGNDisplay() { document.getElementById('pgn-display').innerText = game.pgn() || 'لم تبدأ المباراة بعد...'; }
+
+        function downloadPGN() {
+            const pgnText = game.pgn();
+            if (!pgnText) return alert('لا توجد نقلات لحفظها!');
+            const date = new Date().toISOString().slice(0, 10);
+            const fullContent = `[Event "تحليل شطرنج"]\n[Date "${date}"]\n[Opening "${document.getElementById('opening-name').innerText}"]\n\n${pgnText}`;
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob([fullContent], { type: 'text/plain;charset=utf-8' }));
+            link.download = `chess_game_${date}.txt`; link.click();
+        }
+
+        function loadPGN() {
+            const tempGame = new Chess();
+            if (tempGame.load_pgn(document.get
