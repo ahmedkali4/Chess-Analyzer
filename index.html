@@ -268,4 +268,28 @@
 
         function loadPGN() {
             const tempGame = new Chess();
-            if (tempGame.load_pgn(document.get
+            if (tempGame.load_pgn(document.getElementById('pgn-input').value.trim())) {
+                historyMoves = tempGame.history({ verbose: true }); goToMove(0);
+                document.getElementById('move-quality').innerText = 'تم تحميل المباراة! استخدم الأسهم للتنقل';
+            } else alert('صيغة PGN غير صحيحة.');
+        }
+
+        function resetGame() {
+            game.reset(); historyMoves = []; currentMoveIndex = 0; board.start(); updatePGNDisplay();
+            document.getElementById('opening-selector').value = '';
+            document.getElementById('opening-desc').innerText = 'حرك القطع لاكتشاف الافتتاحية، أو اختر درساً من القائمة.';
+            document.getElementById('move-quality').innerText = 'دور جديد - ابدأ اللعب'; document.getElementById('move-quality').className = 'move-quality';
+            startRuntimeAnalysis();
+        }
+
+        board = Chessboard('board', {
+            draggable: true, position: 'start',
+            pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+            onDragStart: () => !game.game_over(),
+            onDrop: onDrop,
+            onSnapEnd: () => board.position(game.fen())
+        });
+        window.addEventListener('resize', () => { board.resize(); drawArrow(lastBestMove); });
+    </script>
+</body>
+</html>
