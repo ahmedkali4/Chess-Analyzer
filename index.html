@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>محلل ومدرب الشطرنج</title>
+    <title>محلل ومدرب الشطرنج الاحترافي</title>
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
     <style>
         * { box-sizing: border-box; }
-        body { font-family: Tahoma, sans-serif; background: #161512; color: #e0e0e0; margin: 0; padding: 12px; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        body { font-family: Tahoma, sans-serif; background: #161512; color: #e0e0e0; margin: 0; padding: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; min-height: 100vh; }
         .board-container { display: flex; gap: 8px; align-items: center; }
         .eval-bar-wrapper { width: 22px; height: min(82vw, 450px); background: #2b2926; border-radius: 4px; overflow: hidden; position: relative; border: 1px solid #444; display: flex; flex-direction: column; justify-content: flex-end; }
-        .eval-bar-fill { width: 100%; height: 50%; background: #f0f0f0; transition: height 0.4s; }
+        .eval-bar-fill { width: 100%; height: 50%; background: #f0f0f0; transition: height 0.3s; }
         .eval-text { position: absolute; width: 100%; text-align: center; font-size: 10px; font-weight: bold; z-index: 2; padding: 3px 0; }
         .eval-top { top: 2px; color: #fff; }
         .eval-bottom { bottom: 2px; color: #111; }
         .board-wrapper { position: relative; width: min(82vw, 450px); height: min(82vw, 450px); touch-action: none; }
         #board { width: 100%; height: 100%; }
         #arrow-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
-        .panel { width: min(92vw, 420px); background: #262421; padding: 14px; border-radius: 8px; display: flex; flex-direction: column; gap: 10px; }
+        .panel { width: min(95vw, 440px); background: #262421; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .box { background: #302e2b; padding: 10px; border-radius: 6px; border: 1px solid #3d3b38; }
-        .box-title { font-size: 0.85em; color: #9e9e9e; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .box-title { font-size: 0.85em; color: #9e9e9e; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
         .opening-banner { background: #1e293b; border: 1px solid #38bdf8; border-radius: 6px; padding: 10px; }
         .opening-name { color: #38bdf8; font-weight: bold; font-size: 0.95em; direction: ltr; text-align: left; }
-        .opening-desc { font-size: 0.85em; color: #cbd5e1; margin-top: 5px; line-height: 1.4; }
-        .master-moves { font-family: monospace; font-size: 0.8em; color: #94a3b8; margin-top: 5px; direction: ltr; text-align: left; }
+        .opening-desc { font-size: 0.82em; color: #cbd5e1; margin-top: 4px; line-height: 1.4; }
+        .master-moves { font-family: monospace; font-size: 0.8em; color: #94a3b8; margin-top: 4px; direction: ltr; text-align: left; }
         .engine-lines { font-family: monospace; font-size: 0.9em; direction: ltr; text-align: left; line-height: 1.5; color: #a5d6a7; }
         .move-quality { font-weight: bold; font-size: 0.95em; padding: 7px; border-radius: 4px; text-align: center; background: #222; }
         .q-best { color: #81c784; border-right: 4px solid #4caf50; }
@@ -31,15 +31,15 @@
         .q-inaccuracy { color: #fff176; border-right: 4px solid #fbc02d; }
         .q-mistake { color: #ffb74d; border-right: 4px solid #ff9800; }
         .q-blunder { color: #e57373; border-right: 4px solid #f44336; }
-        .pgn-box { height: 90px; overflow-y: auto; font-family: monospace; direction: ltr; text-align: left; font-size: 0.9em; color: #ddd; background: #1e1d1a; padding: 8px; border-radius: 4px; }
+        .pgn-box { height: 85px; overflow-y: auto; font-family: monospace; direction: ltr; text-align: left; font-size: 0.9em; color: #ddd; background: #1e1d1a; padding: 8px; border-radius: 4px; border: 1px solid #444; }
         .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 6px; }
         .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
         select, button, textarea { border-radius: 4px; font-family: inherit; }
         select { width: 100%; padding: 8px; background: #1e1d1a; color: #fff; border: 1px solid #555; }
-        button { padding: 9px 5px; background: #3692e7; color: #fff; border: none; cursor: pointer; font-weight: bold; font-size: 0.85em; }
+        button { padding: 8px 5px; background: #3692e7; color: #fff; border: none; cursor: pointer; font-weight: bold; font-size: 0.85em; }
         button.secondary { background: #45423e; }
         button.success { background: #4caf50; }
-        textarea { width: 100%; height: 48px; background: #1e1d1a; color: #fff; border: 1px solid #444; padding: 6px; font-family: monospace; direction: ltr; resize: none; }
+        textarea { width: 100%; height: 45px; background: #1e1d1a; color: #fff; border: 1px solid #444; padding: 6px; font-family: monospace; direction: ltr; resize: none; }
     </style>
 </head>
 <body>
@@ -65,6 +65,7 @@
             <div id="opening-desc" class="opening-desc">حرك القطع لاكتشاف الافتتاحية، أو اختر درساً من القائمة.</div>
             <div id="master-moves" class="master-moves"></div>
         </div>
+
         <div class="box">
             <div class="box-title"><span>🎓 تعليم الافتتاحيات</span></div>
             <select id="opening-selector" onchange="loadSelectedOpening()">
@@ -79,14 +80,34 @@
                 <option value="french_defense">الدفاع الفرنسي (French Defense)</option>
             </select>
         </div>
+
+        <div class="box">
+            <div class="box-title"><span>🏛️ مكتبة أبطال العالم (PGN Mentor)</span></div>
+            <select id="player-selector" onchange="loadPlayerDatabase()">
+                <option value="">-- اختر ملف بطل من السيرفر --</option>
+                <option value="https://raw.githubusercontent.com/KhaledAblazey/pgn-repository/main/Tal.pgn">ميخائيل تال (Mikhail Tal)</option>
+                <option value="https://raw.githubusercontent.com/KhaledAblazey/pgn-repository/main/Alekhine.pgn">ألكسندر أليخين (Alexander Alekhine)</option>
+                <option value="https://raw.githubusercontent.com/KhaledAblazey/pgn-repository/main/Fischer.pgn">بوبي فيشر (Bobby Fischer)</option>
+            </select>
+            <select id="games-list" onchange="selectMasterGame()" style="margin-top: 6px; display: none;">
+                <option value="">-- اختر المباراة --</option>
+            </select>
+            <div style="margin-top: 6px; border-top: 1px solid #444; padding-top: 6px;">
+                <label style="font-size: 0.75em; color: #aaa; display: block;">أو افتح ملف .pgn من جهازك مباشرة:</label>
+                <input type="file" id="pgn-file-input" accept=".pgn,.txt" onchange="loadLocalPGNFile(event)" style="font-size: 0.75em; color: #ccc; width: 100%;">
+            </div>
+        </div>
+
         <div class="box">
             <div class="box-title"><span>تقييم النقلة</span><span id="engine-status" style="color: #ffb74d;">⏳ تحميل...</span></div>
             <div id="move-quality" class="move-quality">ابدأ اللعب للتحليل الفوري</div>
         </div>
+
         <div class="box">
             <div class="box-title"><span>أفضل الردود (Stockfish)</span><span id="depth-info">Depth: 0</span></div>
             <div id="engine-lines" class="engine-lines">في انتظار التحليل...</div>
         </div>
+
         <div class="box">
             <div class="box-title"><span>سجل النقلات (PGN)</span></div>
             <div id="pgn-display" class="pgn-box"></div>
@@ -97,22 +118,25 @@
                 <button class="secondary" onclick="goToMove(historyMoves.length)">⏭</button>
             </div>
         </div>
+
         <div class="actions">
             <button class="success" onclick="downloadPGN()">💾 حفظ Text</button>
             <button class="secondary" onclick="flipBoard()">🔄 قلب الرقعة</button>
             <button class="secondary" onclick="resetGame()">🆕 جديد</button>
         </div>
+
         <div class="box">
             <div class="box-title"><span>استيراد PGN</span></div>
             <textarea id="pgn-input" placeholder="1. e4 e5 2. Nf3 Nc6 ..."></textarea>
             <button style="width: 100%; margin-top: 5px;" onclick="loadPGN()">تحميل المباراة</button>
         </div>
     </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script>
-        let board = null, game = new Chess(), stockfish = null, historyMoves = [], currentMoveIndex = 0, currentEval = 0.0, pvLines = {}, lastBestMove = '';
+        let board = null, game = new Chess(), stockfish = null, historyMoves = [], currentMoveIndex = 0, currentEval = 0.0, pvLines = {}, lastBestMove = '', loadedMasterGames = [];
 
         const openingsLibrary = {
             kings_gambit_accepted: { pgn: "1. e4 e5 2. f4 exf4 3. Nf3 g5 4. Bc4 Bg7", desc: "جامبيت الملك المقبول (C33): يضحي الأبيض ببيدق f4 لفتح عمود f والسيطرة على الوسط بـ d4، بينما يتمسك الأسود بالبيدق عبر g5." },
@@ -125,6 +149,7 @@
             french_defense: { pgn: "1. e4 e6 2. d4 d5 3. Nc3 Bb4 4. e5 c5", desc: "الدفاع الفرنسي (C15): يبني الأسود سلسلة بيادق قوية ويهاجم قاعدة الأبيض d4 بالنقلة c5." }
         };
 
+        // تشغيل محرك Stockfish محلياً
         fetch('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js')
             .then(res => res.text())
             .then(code => {
@@ -147,115 +172,7 @@
             return sanList.join(' ');
         }
 
-        function parseEngineOutput(line) {
-            if (line.includes('info depth') && line.includes('pv')) {
-                const depthMatch = line.match(/depth (\d+)/), multipvMatch = line.match(/multipv (\d+)/);
-                const scoreCpMatch = line.match(/score cp (-?\d+)/), scoreMateMatch = line.match(/score mate (-?\d+)/), pvMatch = line.match(/ pv (.+)/);
-                if (depthMatch && pvMatch) {
-                    const lineNum = multipvMatch ? multipvMatch[1] : '1', rawMoves = pvMatch[1].split(' ');
-                    let scoreText = '', numericEval = 0;
-                    if (scoreCpMatch) {
-                        let cp = parseInt(scoreCpMatch[1]) / 100;
-                        if (game.turn() === 'b') cp = -cp;
-                        numericEval = cp; scoreText = (cp > 0 ? '+' : '') + cp.toFixed(2);
-                    } else if (scoreMateMatch) {
-                        let mate = parseInt(scoreMateMatch[1]);
-                        if (game.turn() === 'b') mate = -mate;
-                        numericEval = mate > 0 ? 100 : -100; scoreText = 'M' + Math.abs(mate);
-                    }
-                    pvLines[lineNum] = `<b>[${scoreText}]</b> ${uciLineToSan(game.fen(), rawMoves)}`;
-                    document.getElementById('depth-info').innerText = `Depth: ${depthMatch[1]}`;
-                    if (lineNum === '1') { currentEval = numericEval; updateEvalBar(numericEval, scoreText); lastBestMove = rawMoves[0]; drawArrow(lastBestMove); }
-                    let html = '';
-                    for (let i = 1; i <= 3; i++) if (pvLines[i]) html += `<div>${i}. ${pvLines[i]}</div>`;
-                    document.getElementById('engine-lines').innerHTML = html;
-                }
-            }
-        }
-
-        async function detectOpeningRuntime() {
-            if (historyMoves.length === 0 || currentMoveIndex === 0) {
-                document.getElementById('eco-code').innerText = 'Start'; document.getElementById('opening-name').innerText = 'Starting Position'; document.getElementById('master-moves').innerText = ''; return;
-            }
-            try {
-                const res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(game.fen())}&topGames=0&recentGames=0`);
-                const data = await res.json();
-                if (data.opening) { document.getElementById('eco-code').innerText = data.opening.eco; document.getElementById('opening-name').innerText = data.opening.name; }
-                if (data.moves && data.moves.length > 0) {
-                    const top3 = data.moves.slice(0, 3).map(m => `${m.san} (${Math.round((m.white / (m.white + m.draws + m.black)) * 100)}% W)`).join(' | ');
-                    document.getElementById('master-moves').innerText = `نقلات الأساتذة: ${top3}`;
-                } else { document.getElementById('master-moves').innerText = 'خارج كتاب الافتتاحيات (Middlegame)'; }
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script>
-        let board = null, game = new Chess(), stockfish = null, historyMoves = [], currentMoveIndex = 0, currentEval = 0.0, pvLines = {}, lastBestMove = '', isDeepMode = false;
-
-        const openingsLibrary = {
-            kings_gambit_accepted: { pgn: "1. e4 e5 2. f4 exf4 3. Nf3 g5 4. Bc4 Bg7", desc: "جامبيت الملك المقبول (C33): يضحي الأبيض ببيدق f4 لفتح عمود f والسيطرة على الوسط بـ d4، بينما يتمسك الأسود بالبيدق عبر g5." },
-            kings_gambit_falkbeer: { pgn: "1. e4 e5 2. f4 d5 3. exd5 e4 4. d3 Nf6", desc: "هجوم فالكبير المضاد (C31): يرفض الأسود البيدق ويضرب الوسط فوراً بـ d5 لاستغلال ضعف جناح الملك." },
-            queens_gambit: { pgn: "1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Be7", desc: "جامبيت الوزير (D37): يعرض الأبيض بيدق c4 لصرف بيدق الأسود عن الوسط والضغط على d5." },
-            italian_game: { pgn: "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d4", desc: "الافتتاح الإيطالي (C50): يوجه الفيل نحو أضعف نقطة (f7) ويهيئ لبناء وسط قوي بـ c3 ثم d4." },
-            ruy_lopez: { pgn: "1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O", desc: "روي لوبيز (C60): يضغط الأبيض على الحصان المدافع عن بيدق e5 لخلق ضغط مستمر على الوسط." },
-            sicilian_najdorf: { pgn: "1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6", desc: "الدفاع الصقلي - ناجدورف (B90): دفاع هجومي للأسود، يمنع قفزات قطع الأبيض لـ b5 ويجهز لهجوم في جناح الوزير." },
-            caro_kann: { pgn: "1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Bf5", desc: "دفاع كارو-كان (B18): دفاع صلب يحافظ على هيكل بيادق متماسك ويخرج الفيل الأبيض خارج السلسلة." },
-            french_defense: { pgn: "1. e4 e6 2. d4 d5 3. Nc3 Bb4 4. e5 c5", desc: "الدفاع الفرنسي (C15): يبني الأسود سلسلة بيادق قوية ويهاجم قاعدة الأبيض d4 بالنقلة c5." }
-        };
-
-        // إضافة زر التحليل العميق تلقائياً في لوحة التحكم
-        window.addEventListener('DOMContentLoaded', () => {
-            const depthSpan = document.getElementById('depth-info');
-            if (depthSpan) {
-                const deepBtn = document.createElement('button');
-                deepBtn.id = 'deep-btn';
-                deepBtn.innerText = '⚡ تفعيل القوة القصوى';
-                deepBtn.style.cssText = 'padding: 3px 8px; font-size: 0.75em; background: #d97706; margin-right: 8px;';
-                deepBtn.onclick = toggleDeepMode;
-                depthSpan.parentNode.insertBefore(deepBtn, depthSpan);
-            }
-        });
-
-        function toggleDeepMode() {
-            isDeepMode = !isDeepMode;
-            const btn = document.getElementById('deep-btn');
-            if (isDeepMode) {
-                btn.innerText = '🔥 وضع القوة القصوى (شغال)';
-                btn.style.background = '#dc2626';
-                stockfish.postMessage('setoption name MultiPV value 1'); // تركيز 100% من القوة في أفضل نقلة فقط
-            } else {
-                btn.innerText = '⚡ تفعيل القوة القصوى';
-                btn.style.background = '#d97706';
-                stockfish.postMessage('setoption name MultiPV value 3');
-            }
-            startRuntimeAnalysis();
-        }
-
-        // تحميل محرك Stockfish مع رفع الذاكرة المؤقتة Hash
-        fetch('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js')
-            .then(res => res.text())
-            .then(code => {
-                stockfish = new Worker(URL.createObjectURL(new Blob([code], { type: 'application/javascript' })));
-                stockfish.postMessage('uci');
-                stockfish.postMessage('setoption name Hash value 64'); // رفع الذاكرة لـ 64 ميجا لزيادة الذكاء
-                stockfish.postMessage('setoption name Contempt value 20'); // لعب هجومي حاسم
-                stockfish.postMessage('setoption name MultiPV value 3');
-                stockfish.onmessage = e => parseEngineOutput(e.data);
-                document.getElementById('engine-status').innerText = '● المحرك جاهز (Turbo)';
-                document.getElementById('engine-status').style.color = '#4caf50';
-                startRuntimeAnalysis();
-            });
-
-        function uciLineToSan(fen, uciMoves) {
-            const temp = new Chess(fen), sanList = [];
-            for (let m of uciMoves.slice(0, 6)) {
-                const moveObj = temp.move({ from: m.substring(0, 2), to: m.substring(2, 4), promotion: m[4] || 'q' });
-                if (!moveObj) break;
-                sanList.push(moveObj.san);
-            }
-            return sanList.join(' ');
-        }
-
-        // 1. الاستعانة بسحابة Lichess (تحليل بعمق 40+ من أقوى سيرفرات العالم)
+        // 1. الاستعانة بسحابة Lichess (التحليل الفائق)
         async function fetchCloudEval() {
             try {
                 const res = await fetch(`https://lichess.org/api/cloud-eval?fen=${encodeURIComponent(game.fen())}&multiPv=3`);
@@ -289,12 +206,26 @@
             return false;
         }
 
+        async function startRuntimeAnalysis() {
+            if (!stockfish) return;
+            pvLines = {};
+            stockfish.postMessage('stop');
+            detectOpeningRuntime();
+
+            // محاولة جلب التحليل من السحابة أولاً
+            const foundInCloud = await fetchCloudEval();
+            if (foundInCloud) return;
+
+            // في حال عدم توفره في السحابة، تشغيل المحرك المحلي
+            stockfish.postMessage('position fen ' + game.fen());
+            stockfish.postMessage('go depth 16');
+        }
+
         function parseEngineOutput(line) {
             if (line.includes('info depth') && line.includes('pv')) {
                 const depthMatch = line.match(/depth (\d+)/), multipvMatch = line.match(/multipv (\d+)/);
                 const scoreCpMatch = line.match(/score cp (-?\d+)/), scoreMateMatch = line.match(/score mate (-?\d+)/), pvMatch = line.match(/ pv (.+)/);
                 if (depthMatch && pvMatch) {
-                    const depth = parseInt(depthMatch[1]);
                     const lineNum = multipvMatch ? multipvMatch[1] : '1', rawMoves = pvMatch[1].split(' ');
                     let scoreText = '', numericEval = 0;
                     if (scoreCpMatch) {
@@ -307,16 +238,16 @@
                         numericEval = mate > 0 ? 100 : -100; scoreText = 'M' + Math.abs(mate);
                     }
                     pvLines[lineNum] = `<b>[${scoreText}]</b> ${uciLineToSan(game.fen(), rawMoves)}`;
-                    document.getElementById('depth-info').innerText = `Depth: ${depth}${isDeepMode ? ' 🔥' : ''}`;
+                    document.getElementById('depth-info').innerText = `Depth: ${depthMatch[1]}`;
                     if (lineNum === '1') { currentEval = numericEval; updateEvalBar(numericEval, scoreText); lastBestMove = rawMoves[0]; drawArrow(lastBestMove); }
                     let html = '';
-                    const maxLines = isDeepMode ? 1 : 3;
-                    for (let i = 1; i <= maxLines; i++) if (pvLines[i]) html += `<div>${i}. ${pvLines[i]}</div>`;
+                    for (let i = 1; i <= 3; i++) if (pvLines[i]) html += `<div>${i}. ${pvLines[i]}</div>`;
                     document.getElementById('engine-lines').innerHTML = html;
                 }
             }
         }
 
+        // 2. التعرف اللحظي على الافتتاحية
         async function detectOpeningRuntime() {
             if (historyMoves.length === 0 || currentMoveIndex === 0) {
                 document.getElementById('eco-code').innerText = 'Start'; document.getElementById('opening-name').innerText = 'Starting Position'; document.getElementById('master-moves').innerText = ''; return;
@@ -328,7 +259,7 @@
                 if (data.moves && data.moves.length > 0) {
                     const top3 = data.moves.slice(0, 3).map(m => `${m.san} (${Math.round((m.white / (m.white + m.draws + m.black)) * 100)}% W)`).join(' | ');
                     document.getElementById('master-moves').innerText = `نقلات الأساتذة: ${top3}`;
-                } else { document.getElementById('master-moves').innerText = 'خارج كتاب الافتتاحيات (Middlegame)'; }
+                } else { document.getElementById('master-moves').innerText = 'خارج كتاب الافتتاحيات'; }
             } catch (e) {}
         }
 
@@ -345,22 +276,60 @@
             }
         }
 
-        async function startRuntimeAnalysis() {
-            if (!stockfish) return;
-            pvLines = {};
-            stockfish.postMessage('stop');
-            detectOpeningRuntime();
-
-            // إذا لم نكن في وضع القوة القصوى، نجرب سحابة Lichess (Depth 45+) أولاً
-            if (!isDeepMode) {
-                const foundInCloud = await fetchCloudEval();
-                if (foundInCloud) return; // لو لقينا تحليل سحابي عميق نكتفي به لسرعته ودقته الفائقة
+        // 3. إدارة قواعد بيانات الأبطال والملفات المحلية
+        async function loadPlayerDatabase() {
+            const fileUrl = document.getElementById('player-selector').value;
+            const gamesSelect = document.getElementById('games-list');
+            if (!fileUrl) { gamesSelect.style.display = 'none'; return; }
+            gamesSelect.style.display = 'block';
+            gamesSelect.innerHTML = '<option>⏳ جاري تحميل المباريات...</option>';
+            try {
+                const res = await fetch(fileUrl);
+                if (!res.ok) throw new Error();
+                parseMultiPGN(await res.text());
+            } catch (e) {
+                gamesSelect.innerHTML = '<option>❌ تعذر تحميل الملف</option>';
             }
+        }
 
-            stockfish.postMessage('position fen ' + game.fen());
-            // في الوضع العادي عمق 18، وفي وضع القوة القصوى عمق 22
-            const targetDepth = isDeepMode ? 22 : 18;
-            stockfish.postMessage(`go depth ${targetDepth}`);
+        function loadLocalPGNFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('games-list').style.display = 'block';
+                parseMultiPGN(e.target.result);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseMultiPGN(rawText) {
+            const rawGames = rawText.split(/(?=\[Event\s)/g).filter(g => g.trim().length > 20);
+            loadedMasterGames = rawGames.slice(0, 150);
+            const gamesSelect = document.getElementById('games-list');
+            gamesSelect.innerHTML = `<option value="">-- اختر مباراة (${loadedMasterGames.length} دور) --</option>`;
+            loadedMasterGames.forEach((gText, idx) => {
+                const white = (gText.match(/\[White "(.*?)"\]/) || [])[1] || 'White';
+                const black = (gText.match(/\[Black "(.*?)"\]/) || [])[1] || 'Black';
+                const date = (gText.match(/\[Date "(\d{4})/) || [])[1] || '';
+                const result = (gText.match(/\[Result "(.*?)"\]/) || [])[1] || '';
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.innerText = `${date ? '['+date+'] ' : ''}${white} vs ${black} (${result})`;
+                gamesSelect.appendChild(opt);
+            });
+        }
+
+        function selectMasterGame() {
+            const idx = document.getElementById('games-list').value;
+            if (idx === '') return;
+            const tempGame = new Chess();
+            if (tempGame.load_pgn(loadedMasterGames[idx], { sloppy: true })) {
+                historyMoves = tempGame.history({ verbose: true });
+                goToMove(0);
+                document.getElementById('move-quality').innerText = 'تم تحميل الدور! استخدم الأسهم للتنقل';
+                document.getElementById('move-quality').className = 'move-quality';
+            }
         }
 
         function evaluateMoveQuality(prevEval, newEval, playerColor) {
