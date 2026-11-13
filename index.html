@@ -185,6 +185,150 @@
                     const top3 = data.moves.slice(0, 3).map(m => `${m.san} (${Math.round((m.white / (m.white + m.draws + m.black)) * 100)}% W)`).join(' | ');
                     document.getElementById('master-moves').innerText = `نقلات الأساتذة: ${top3}`;
                 } else { document.getElementById('master-moves').innerText = 'خارج كتاب الافتتاحيات (Middlegame)'; }
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script>
+        let board = null, game = new Chess(), stockfish = null, historyMoves = [], currentMoveIndex = 0, currentEval = 0.0, pvLines = {}, lastBestMove = '', isDeepMode = false;
+
+        const openingsLibrary = {
+            kings_gambit_accepted: { pgn: "1. e4 e5 2. f4 exf4 3. Nf3 g5 4. Bc4 Bg7", desc: "جامبيت الملك المقبول (C33): يضحي الأبيض ببيدق f4 لفتح عمود f والسيطرة على الوسط بـ d4، بينما يتمسك الأسود بالبيدق عبر g5." },
+            kings_gambit_falkbeer: { pgn: "1. e4 e5 2. f4 d5 3. exd5 e4 4. d3 Nf6", desc: "هجوم فالكبير المضاد (C31): يرفض الأسود البيدق ويضرب الوسط فوراً بـ d5 لاستغلال ضعف جناح الملك." },
+            queens_gambit: { pgn: "1. d4 d5 2. c4 e6 3. Nc3 Nf6 4. Bg5 Be7", desc: "جامبيت الوزير (D37): يعرض الأبيض بيدق c4 لصرف بيدق الأسود عن الوسط والضغط على d5." },
+            italian_game: { pgn: "1. e4 e5 2. Nf3 Nc6 3. Bc4 Bc5 4. c3 Nf6 5. d4", desc: "الافتتاح الإيطالي (C50): يوجه الفيل نحو أضعف نقطة (f7) ويهيئ لبناء وسط قوي بـ c3 ثم d4." },
+            ruy_lopez: { pgn: "1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O", desc: "روي لوبيز (C60): يضغط الأبيض على الحصان المدافع عن بيدق e5 لخلق ضغط مستمر على الوسط." },
+            sicilian_najdorf: { pgn: "1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6", desc: "الدفاع الصقلي - ناجدورف (B90): دفاع هجومي للأسود، يمنع قفزات قطع الأبيض لـ b5 ويجهز لهجوم في جناح الوزير." },
+            caro_kann: { pgn: "1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Bf5", desc: "دفاع كارو-كان (B18): دفاع صلب يحافظ على هيكل بيادق متماسك ويخرج الفيل الأبيض خارج السلسلة." },
+            french_defense: { pgn: "1. e4 e6 2. d4 d5 3. Nc3 Bb4 4. e5 c5", desc: "الدفاع الفرنسي (C15): يبني الأسود سلسلة بيادق قوية ويهاجم قاعدة الأبيض d4 بالنقلة c5." }
+        };
+
+        // إضافة زر التحليل العميق تلقائياً في لوحة التحكم
+        window.addEventListener('DOMContentLoaded', () => {
+            const depthSpan = document.getElementById('depth-info');
+            if (depthSpan) {
+                const deepBtn = document.createElement('button');
+                deepBtn.id = 'deep-btn';
+                deepBtn.innerText = '⚡ تفعيل القوة القصوى';
+                deepBtn.style.cssText = 'padding: 3px 8px; font-size: 0.75em; background: #d97706; margin-right: 8px;';
+                deepBtn.onclick = toggleDeepMode;
+                depthSpan.parentNode.insertBefore(deepBtn, depthSpan);
+            }
+        });
+
+        function toggleDeepMode() {
+            isDeepMode = !isDeepMode;
+            const btn = document.getElementById('deep-btn');
+            if (isDeepMode) {
+                btn.innerText = '🔥 وضع القوة القصوى (شغال)';
+                btn.style.background = '#dc2626';
+                stockfish.postMessage('setoption name MultiPV value 1'); // تركيز 100% من القوة في أفضل نقلة فقط
+            } else {
+                btn.innerText = '⚡ تفعيل القوة القصوى';
+                btn.style.background = '#d97706';
+                stockfish.postMessage('setoption name MultiPV value 3');
+            }
+            startRuntimeAnalysis();
+        }
+
+        // تحميل محرك Stockfish مع رفع الذاكرة المؤقتة Hash
+        fetch('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js')
+            .then(res => res.text())
+            .then(code => {
+                stockfish = new Worker(URL.createObjectURL(new Blob([code], { type: 'application/javascript' })));
+                stockfish.postMessage('uci');
+                stockfish.postMessage('setoption name Hash value 64'); // رفع الذاكرة لـ 64 ميجا لزيادة الذكاء
+                stockfish.postMessage('setoption name Contempt value 20'); // لعب هجومي حاسم
+                stockfish.postMessage('setoption name MultiPV value 3');
+                stockfish.onmessage = e => parseEngineOutput(e.data);
+                document.getElementById('engine-status').innerText = '● المحرك جاهز (Turbo)';
+                document.getElementById('engine-status').style.color = '#4caf50';
+                startRuntimeAnalysis();
+            });
+
+        function uciLineToSan(fen, uciMoves) {
+            const temp = new Chess(fen), sanList = [];
+            for (let m of uciMoves.slice(0, 6)) {
+                const moveObj = temp.move({ from: m.substring(0, 2), to: m.substring(2, 4), promotion: m[4] || 'q' });
+                if (!moveObj) break;
+                sanList.push(moveObj.san);
+            }
+            return sanList.join(' ');
+        }
+
+        // 1. الاستعانة بسحابة Lichess (تحليل بعمق 40+ من أقوى سيرفرات العالم)
+        async function fetchCloudEval() {
+            try {
+                const res = await fetch(`https://lichess.org/api/cloud-eval?fen=${encodeURIComponent(game.fen())}&multiPv=3`);
+                if (!res.ok) return false;
+                const data = await res.json();
+                if (data && data.pvs && data.pvs.length > 0) {
+                    document.getElementById('depth-info').innerText = `☁️ Cloud Depth: ${data.depth}`;
+                    let html = '';
+                    data.pvs.forEach((pv, idx) => {
+                        const rawMoves = pv.moves.split(' ');
+                        let scoreText = '', numericEval = 0;
+                        if (pv.cp !== undefined) {
+                            numericEval = pv.cp / 100;
+                            scoreText = (numericEval > 0 ? '+' : '') + numericEval.toFixed(2);
+                        } else if (pv.mate !== undefined) {
+                            numericEval = pv.mate > 0 ? 100 : -100;
+                            scoreText = 'M' + Math.abs(pv.mate);
+                        }
+                        if (idx === 0) {
+                            currentEval = numericEval;
+                            updateEvalBar(numericEval, scoreText);
+                            lastBestMove = rawMoves[0];
+                            drawArrow(lastBestMove);
+                        }
+                        html += `<div>${idx + 1}. <b>[${scoreText}]</b> ${uciLineToSan(game.fen(), rawMoves)}</div>`;
+                    });
+                    document.getElementById('engine-lines').innerHTML = html;
+                    return true;
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        function parseEngineOutput(line) {
+            if (line.includes('info depth') && line.includes('pv')) {
+                const depthMatch = line.match(/depth (\d+)/), multipvMatch = line.match(/multipv (\d+)/);
+                const scoreCpMatch = line.match(/score cp (-?\d+)/), scoreMateMatch = line.match(/score mate (-?\d+)/), pvMatch = line.match(/ pv (.+)/);
+                if (depthMatch && pvMatch) {
+                    const depth = parseInt(depthMatch[1]);
+                    const lineNum = multipvMatch ? multipvMatch[1] : '1', rawMoves = pvMatch[1].split(' ');
+                    let scoreText = '', numericEval = 0;
+                    if (scoreCpMatch) {
+                        let cp = parseInt(scoreCpMatch[1]) / 100;
+                        if (game.turn() === 'b') cp = -cp;
+                        numericEval = cp; scoreText = (cp > 0 ? '+' : '') + cp.toFixed(2);
+                    } else if (scoreMateMatch) {
+                        let mate = parseInt(scoreMateMatch[1]);
+                        if (game.turn() === 'b') mate = -mate;
+                        numericEval = mate > 0 ? 100 : -100; scoreText = 'M' + Math.abs(mate);
+                    }
+                    pvLines[lineNum] = `<b>[${scoreText}]</b> ${uciLineToSan(game.fen(), rawMoves)}`;
+                    document.getElementById('depth-info').innerText = `Depth: ${depth}${isDeepMode ? ' 🔥' : ''}`;
+                    if (lineNum === '1') { currentEval = numericEval; updateEvalBar(numericEval, scoreText); lastBestMove = rawMoves[0]; drawArrow(lastBestMove); }
+                    let html = '';
+                    const maxLines = isDeepMode ? 1 : 3;
+                    for (let i = 1; i <= maxLines; i++) if (pvLines[i]) html += `<div>${i}. ${pvLines[i]}</div>`;
+                    document.getElementById('engine-lines').innerHTML = html;
+                }
+            }
+        }
+
+        async function detectOpeningRuntime() {
+            if (historyMoves.length === 0 || currentMoveIndex === 0) {
+                document.getElementById('eco-code').innerText = 'Start'; document.getElementById('opening-name').innerText = 'Starting Position'; document.getElementById('master-moves').innerText = ''; return;
+            }
+            try {
+                const res = await fetch(`https://explorer.lichess.ovh/masters?fen=${encodeURIComponent(game.fen())}&topGames=0&recentGames=0`);
+                const data = await res.json();
+                if (data.opening) { document.getElementById('eco-code').innerText = data.opening.eco; document.getElementById('opening-name').innerText = data.opening.name; }
+                if (data.moves && data.moves.length > 0) {
+                    const top3 = data.moves.slice(0, 3).map(m => `${m.san} (${Math.round((m.white / (m.white + m.draws + m.black)) * 100)}% W)`).join(' | ');
+                    document.getElementById('master-moves').innerText = `نقلات الأساتذة: ${top3}`;
+                } else { document.getElementById('master-moves').innerText = 'خارج كتاب الافتتاحيات (Middlegame)'; }
             } catch (e) {}
         }
 
@@ -201,10 +345,22 @@
             }
         }
 
-        function startRuntimeAnalysis() {
+        async function startRuntimeAnalysis() {
             if (!stockfish) return;
-            pvLines = {}; stockfish.postMessage('stop'); stockfish.postMessage('position fen ' + game.fen()); stockfish.postMessage('go depth 15');
+            pvLines = {};
+            stockfish.postMessage('stop');
             detectOpeningRuntime();
+
+            // إذا لم نكن في وضع القوة القصوى، نجرب سحابة Lichess (Depth 45+) أولاً
+            if (!isDeepMode) {
+                const foundInCloud = await fetchCloudEval();
+                if (foundInCloud) return; // لو لقينا تحليل سحابي عميق نكتفي به لسرعته ودقته الفائقة
+            }
+
+            stockfish.postMessage('position fen ' + game.fen());
+            // في الوضع العادي عمق 18، وفي وضع القوة القصوى عمق 22
+            const targetDepth = isDeepMode ? 22 : 18;
+            stockfish.postMessage(`go depth ${targetDepth}`);
         }
 
         function evaluateMoveQuality(prevEval, newEval, playerColor) {
@@ -243,7 +399,7 @@
             if (move === null) return 'snapback';
             historyMoves.push(move); currentMoveIndex = historyMoves.length;
             updatePGNDisplay(); startRuntimeAnalysis();
-            setTimeout(() => evaluateMoveQuality(prevEval, currentEval, playerColor), 600);
+            setTimeout(() => evaluateMoveQuality(prevEval, currentEval, playerColor), 700);
         }
 
         function goToMove(index) {
